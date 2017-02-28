@@ -1,0 +1,52 @@
+; 	ahf's first assembly test program.
+;------------------------------------------------------------------------------
+;	Assembler directives:
+;------------------------------------------------------------------------------
+;
+;
+;
+	.directives;
+	;
+    .equ LoopCount 0x100;
+    .equ Operator  0x120;
+    .array ASCII AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; AB; ab; 01; , ; 
+	;
+	.enddirectives;
+;------------------------------------------------------------------------------
+;	Constant segment:
+;------------------------------------------------------------------------------
+; These values are initialized in the locations at the end of the code segment.
+; For now, .word is the only constant initialization assembly directive.
+; After assembling the code, during the final run, the constant name is 
+;   replaced with its location address in the program memory.
+	.constants;
+;
+	.word	firstConstWord	0xFFFF;
+    .word   secondConstWord 0xEEEE;
+	;
+	.endconstants;
+;------------------------------------------------------------------------------
+;	Code segment:
+;------------------------------------------------------------------------------
+;   first ST/LD var as info, 2nd as storing/loading to register
+	.code;
+			LD      0x00, R1;
+            LD      0x01, R2;
+            ADDC    0x02, R7;
+@Loop:
+            LD   	0(R7), R3;
+            LD      1(R7), R4;
+			LD		2(R7), R5;
+			LD		3(R7), R6;
+			ADDV	R3, R2;
+			ADDV	R4, R2;
+            ADDV    R5, R2;
+            ADDV    R6, R2;
+            ST  	0(R7), R3;
+			ST		1(R7), R4;
+            ST      2(R7), R5;
+            ST      3(R7), R6;
+            ADDC    R7, 0x4;
+            SUBC    R2, 0x4;
+            JMPNN   Loop;
+	.endcode;
