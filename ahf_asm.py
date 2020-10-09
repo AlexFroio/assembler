@@ -7,10 +7,13 @@ inCode = False
 opcode = 0
 Ri = 0
 Rj = 0
+# setup of the lists and dicts we're going to use for keeping track of what line we're on
+# and what instructions are valid.
 AsmLine = list()
 directives = dict()
 constants = dict()
 wordCheck = str()
+# Initialize the files' headers to identify where the output comes from
 romOut = ["-- Memory File output by ahf_asm.py",
 "-- This is machine code generated for single core,",
 "-- non-pipelined ahfRISC521 test",
@@ -28,15 +31,18 @@ ramOut = ["-- Memory File output by ahf_asm.py",
 "DATA_RADIX=HEX",
 " ",
 "CONTENT BEGIN"]
+# Initialize our lists to keep track of what we need to output to our ROM and RAM files.
 romTemp = list()
 ramTemp = list()
 jmpTemp = dict()
 newdict = dict()
+# This is used in command line, like on a windows or linux terminal. I know, fancy.
 parser = argparse.ArgumentParser(description='Take in user generated Assembly, optional for user OpCode JSON')
 parser.add_argument('asm_file', help='Sets the asm input file for the assembler to deconstruct into .mif')
 parser.add_argument('opCode_json', help='insert path file to custom json OpCode file', nargs='?')
 parser.add_argument('-v', '--verbose', help="Verbose mode is enabled")
 args = parser.parse_args()
+# Check if we have a custom list of Operators. Otherwise, use the default one assigned by Dr.Dorin Patru.
 if args.opCode_json:
     with open(args.opCode_json) as OpData:
         OpDict = json.load(OpData)
@@ -58,7 +64,7 @@ else:
 	"ROTR"	: "13",
     "ADDV"  : "14"
 	}
-
+# Convert the instruction indexes to numbers so that we can use them to build our machine instructions.
 for i in OpDict:
 	newdict[str(i)] = (int(OpDict[i]))
 	
@@ -66,6 +72,7 @@ for i in OpDict:
 OpDict = newdict
 pprint(OpDict)
 
+# Open and read in our assembly code file. If it's a comment, ignore it. Otherwise, add it to our list.
 with open(args.asm_file) as AsmInput:
     for line in AsmInput:
         if re.search(comment, line.strip()):
@@ -77,7 +84,11 @@ pprint(AsmLine)
 #    AsmLine[i] = re.sub('\t', ' ', AsmLine[i])
 
 j = 0x0
+# So now for the meat of the program. This basically scans our assembly file several times to make sure we get each instruction correct.
+# First scan checks for constants, second scan checks that there are no issues in reading the code (ie too many variables for an instruction),
+# third scan scans for jumps and sets them up to be written correctly, and finally the 4th scan converts each line into the finished machine instruction.
 try:
+# -------------------------------------------1st Scan-------------------------------------------
     for constCheck in AsmLine:    
         if constCheck.startswith('.directives'):
             inDirectives = True
@@ -132,6 +143,7 @@ try:
             inCode = False
             j = 0
         elif inCode:
+# -------------------------------------------2nd Scan-------------------------------------------
             printFlag = False
             if constCheck.startswith('@'):
                     pprint("I am inside the jmpcheck!!!!")
@@ -183,7 +195,7 @@ except ValueError:
     pprint("Error with line"  + re.sub('\s', ' ', constCheck))
     exit()
 
-    
+# -------------------------------------------3rd Scan-------------------------------------------    
 try:    
     for locJump in AsmLine:
         if locJump.startswith('.code'):
@@ -199,6 +211,7 @@ except ValueError:
     pprint("Error with line"  + locJump)
     exit()
 
+# -------------------------------------------4th Scan-------------------------------------------    
 try:
     for encode in AsmLine:
 
@@ -474,7 +487,7 @@ try:
 except ValueError:
     pprint("Error with line"  + encode)
     exit()
-                
+# file outputs.
 for k in range(0, (len(ramTemp)+1)):
     if k < len(ramTemp):
         #ramOut.append('[' + '{:03x}'.format(k) + '..3FF] : 0000')
